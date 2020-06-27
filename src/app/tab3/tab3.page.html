@@ -1,17 +1,29 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Tab 3
+      Backup
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" text-align="center">
 
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+  <ion-button expand="block" size="large" (click)="exportCollection()">
+    Export colletion
+  </ion-button>
+
+  <ion-item-group>
+    <ion-item-divider>
+      <ion-progress-bar [value]="progress"></ion-progress-bar>
+    </ion-item-divider>
+
+    <ion-item>
+      <ion-label position="stacked">Titles and volumes: </ion-label>
+      <ion-textarea readonly auto-grow="true" [(ngModel)]="stringToWrite"></ion-textarea>
+    </ion-item>
+  </ion-item-group>
+
+
+
+
 </ion-content>
