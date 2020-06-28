@@ -1,0 +1,26 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Backup
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" text-align="center">
+
+  <ion-button expand="block" size="large" (click)="exportCollection()">
+    Export colletion
+  </ion-button>
+
+  <ion-item-group>
+    <ion-item-divider>
+      <ion-progress-bar [value]="progress"></ion-progress-bar>
+    </ion-item-divider>
+
+    <ion-item>
+      <ion-label position="stacked">Titles and volumes: </ion-label>
+      <ion-textarea readonly auto-grow="true" [(ngModel)]="stringToWrite"></ion-textarea>
+    </ion-item>
+  </ion-item-group>
+
+</ion-content>

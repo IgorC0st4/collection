@@ -12,16 +12,13 @@ export class Tab3Page {
   // Variables to Database management
   databaseObj: SQLiteObject;
   mangas_row_data: any = [];
-  editions_row_data: any = [];
+  signature_row_data: any = [];
+  description_model: string = "";
+  manga_id: number = 0;
+  selected_manga:number = 0;
   readonly database_name: string = "collection_datatable.db";
   readonly manga_table_name: string = "manga_table";
-  readonly edition_table_name: string = "edition_table";
-
-  // Variables to i/o interactions
-  private mangaStr: string;
-  progress:number = 0;
-  stringToWrite: string = "";
-  editionsStr: string = "";
+  readonly signature_table_name: string = "signature_table";
 
   constructor(
     private platform: Platform,
@@ -33,41 +30,69 @@ export class Tab3Page {
     })
   }
 
-  // Export the collection to a string that will be presented in the textarea
-  async exportCollection() {
-    console.error("exportCollection called");
-    try {
-      this.stringToWrite = "";
+  // Handle Update Row Operation
+  updateActive: boolean;
+  to_update_item: any;
 
-      // Get List of mangas
-      await this.getAllMangas();
-
-      // Populate string to be writen
-      for (var i = 0; i < this.mangas_row_data.length; i++) {
-        // Add name to str
-        this.mangaStr = this.mangas_row_data[i].Name;
-
-        // Format to editions
-        this.mangaStr += " vols ";
-
-        // Adds editions to the string
-        await this.editionsToStr(this.mangas_row_data[i].pid).then(() => {
-          // Concat this manga and editions to final string
-          this.mangaStr += this.editionsStr;
-          this.stringToWrite += this.mangaStr;
-        });
-        this.progress = i/this.mangas_row_data.length;
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  // Create DB if not there
+  createDB() {
+    this.sqlite.create({
+      name: this.database_name,
+      location: 'default'
+    })
+      .then((db: SQLiteObject) => {
+        this.databaseObj = db;
+        console.error("Database created");
+        //this.createTable();
+        this.getAllMangas();
+      })
+      .catch(error => {
+        alert("error " + JSON.stringify(error));
+        console.error(error);
+      });
   }
 
-  // Get mangas in the collection
-  async getAllMangas() {
-    console.error("getAllMangas called");
+  // Create table
+  createTable() {
     this.databaseObj.executeSql(`
-    SELECT * FROM ${this.manga_table_name} ORDER BY Name
+    CREATE TABLE IF NOT EXISTS ${this.signature_table_name} (pid INTEGER PRIMARY KEY, Description varchar(255), id_manga INTEGER, FOREIGN KEY(id_manga) REFERENCES ${this.manga_table_name} (pid))
+    `,
+      [])
+      .then(() => {
+        this.getAllSignatures();
+        console.error("Signature Table created");
+      })
+      .catch(error => {
+        alert("error " + JSON.stringify(error));
+        console.error(error);
+      });
+  }
+
+  // Retrieve rows from table
+  getAllSignatures() {
+    this.databaseObj.executeSql(`
+    SELECT ${this.signature_table_name}.*, ${this.manga_table_name}.Name
+    FROM ${this.signature_table_name}
+    INNER JOIN ${this.manga_table_name} ON ${this.signature_table_name}.id_manga = ${this.manga_table_name}.pid;
+    `, [])
+      .then((res) => {
+        this.signature_row_data = [];
+        if (res.rows.length > 0) {
+          for (var i = 0; i < res.rows.length; i++) {
+            this.signature_row_data.push(res.rows.item(i));
+          }
+        }
+      })
+      .catch(error => {
+        alert("error " + JSON.stringify(error));
+        console.error(error);
+      });
+  }
+
+  // Retrieve rows from table
+  getAllMangas() {
+    this.databaseObj.executeSql(`
+    SELECT * FROM ${this.manga_table_name}
     `, [])
       .then((res) => {
         this.mangas_row_data = [];
@@ -83,19 +108,35 @@ export class Tab3Page {
       });
   }
 
-  // Retrieve editions from a manga
-  async getEditionsFromManga(manga_id: number) {
-    console.error("getEditionsFromManga " + manga_id.toString() + " called");
-    await this.databaseObj.executeSql(`
-    SELECT * FROM ${this.edition_table_name} WHERE id_manga = ${manga_id} ORDER BY Number
+  // Insert row in the table
+  insertRow() {
+    // Value should not be empty
+    if (!this.description_model.length) {
+      alert("Enter Description");
+      return;
+    }
+
+    this.databaseObj.executeSql(`
+    INSERT INTO ${this.signature_table_name} (Description, id_manga) VALUES ('${this.description_model}', ${this.manga_id})
+    `, [])
+      .then(() => {
+        console.error('Row Inserted');
+        this.getAllSignatures();
+      })
+      .catch(error => {
+        alert("error " + JSON.stringify(error));
+        console.error(error);
+      });
+  }
+
+  // Delete single row 
+  deleteRow(item) {
+    this.databaseObj.executeSql(`
+      DELETE FROM ${this.signature_table_name} WHERE pid = ${item.pid}
     `, [])
       .then((res) => {
-        this.editions_row_data = [];
-        if (res.rows.length > 0) {
-          for (var i = 0; i < res.rows.length; i++) {
-            this.editions_row_data.push(res.rows.item(i));
-          }
-        }
+        console.error("Row Deleted!");
+        this.getAllSignatures();
       })
       .catch(error => {
         alert("error " + JSON.stringify(error));
@@ -103,40 +144,29 @@ export class Tab3Page {
       });
   }
 
-
-  async editionsToStr(manga_id: number) {
-    console.error("editionsToStr called");
-    this.editionsStr = "";
-
-    // Get the editions from the manga
-    await this.getEditionsFromManga(manga_id).then(() => {
-      for (var j = 0; j < this.editions_row_data.length; j++) {
-        // Add a volume number to the string
-        this.editionsStr += this.editions_row_data[j].Number.toString();
-
-        // Compares if it's the end of the interation
-        if (j != this.editions_row_data.length - 1) {
-          this.editionsStr += " , ";
-        }
-      }
-      this.editionsStr += ". \n";
-      console.error("manga_id" + manga_id.toString() + " : " + this.editionsStr);
-    });
+  // Enable update mode and keep row data in a variable
+  enableUpdate(item) {
+    this.updateActive = true;
+    this.to_update_item = item;
+    this.description_model = item.Description;
   }
 
-  // Create DB if not there
-  createDB() {
-    this.sqlite.create({
-      name: this.database_name,
-      location: 'default'
-    })
-      .then((db: SQLiteObject) => {
-        this.databaseObj = db;
-        console.error("Database created");
+  // Update row with saved row id
+  updateRow() {
+    this.databaseObj.executeSql(`
+      UPDATE ${this.signature_table_name}
+      SET Description = '${this.description_model}'
+      WHERE pid = ${this.to_update_item.pid}
+    `, [])
+      .then(() => {
+        console.error('Row Updated!');
+        this.updateActive = false;
+        this.getAllSignatures();
       })
       .catch(error => {
         alert("error " + JSON.stringify(error));
         console.error(error);
       });
   }
+
 }

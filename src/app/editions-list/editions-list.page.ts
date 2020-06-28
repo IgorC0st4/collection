@@ -126,7 +126,6 @@ export class EditionsListPage implements OnInit {
     }
   }
 
-
   getMangaNameById() {
     this.databaseObj.executeSql(`
       SELECT * FROM ${this.manga_table_name} WHERE pid = ${this.manga_id}

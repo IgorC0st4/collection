@@ -1,29 +1,39 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Backup
+      Signatures
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" text-align="center">
-
-  <ion-button expand="block" size="large" (click)="exportCollection()">
-    Export colletion
-  </ion-button>
-
   <ion-item-group>
     <ion-item-divider>
-      <ion-progress-bar [value]="progress"></ion-progress-bar>
+      <ion-list>
+        <ion-item>
+          <ion-label>Manga</ion-label>
+          <ion-select [(ngModel)]="selected_manga">
+            <ion-select-option *ngFor="let manga of mangas_row_data">{{manga.Name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
     </ion-item-divider>
 
-    <ion-item>
-      <ion-label position="stacked">Titles and volumes: </ion-label>
-      <ion-textarea readonly auto-grow="true" [(ngModel)]="stringToWrite"></ion-textarea>
-    </ion-item>
+    <ion-item-divider>
+      <ion-textarea placeholder="Enter Description" [(ngModel)]="description_model" auto-grow="true"></ion-textarea>
+  
+      <ng-container *ngIf="updateActive; else elseTemplateUpdate">
+        <ion-button expand="block" (click)="updateRow()">
+          <ion-icon name="refresh-circle"></ion-icon>
+        </ion-button>
+      </ng-container>
+  
+      <ng-template #elseTemplateUpdate>
+        <ion-button expand="block" (click)="insertRow()">
+          <ion-icon name="add-circle"></ion-icon>
+        </ion-button>
+      </ng-template>
+    </ion-item-divider>
   </ion-item-group>
-
-
-
 
 </ion-content>
