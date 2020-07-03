@@ -60,7 +60,7 @@ export class EditionsListPage implements OnInit {
   // Create table
   createTable() {
     this.databaseObj.executeSql(`
-    CREATE TABLE IF NOT EXISTS ${this.edition_table_name} (pid INTEGER PRIMARY KEY, Name varchar(255), Number INTEGER, id_manga INTEGER, FOREIGN KEY(id_manga) REFERENCES ${this.manga_table_name} (pid))
+    CREATE TABLE IF NOT EXISTS ${this.edition_table_name} (pid INTEGER PRIMARY KEY, Name varchar(255), Number INTEGER, id_manga INTEGER, FOREIGN KEY(id_manga) REFERENCES ${this.manga_table_name} (pid) ON DELETE CASCADE)
     `,
       [])
       .then(() => {

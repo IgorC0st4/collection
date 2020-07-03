@@ -15,7 +15,7 @@ export class Tab3Page {
   signature_row_data: any = [];
   description_model: string = "";
   manga_id: number = 0;
-  selected_manga:number = 0;
+  selected_manga:string = "";
   readonly database_name: string = "collection_datatable.db";
   readonly manga_table_name: string = "manga_table";
   readonly signature_table_name: string = "signature_table";
@@ -43,7 +43,7 @@ export class Tab3Page {
       .then((db: SQLiteObject) => {
         this.databaseObj = db;
         console.error("Database created");
-        //this.createTable();
+        this.createTable();
         this.getAllMangas();
       })
       .catch(error => {
@@ -73,7 +73,8 @@ export class Tab3Page {
     this.databaseObj.executeSql(`
     SELECT ${this.signature_table_name}.*, ${this.manga_table_name}.Name
     FROM ${this.signature_table_name}
-    INNER JOIN ${this.manga_table_name} ON ${this.signature_table_name}.id_manga = ${this.manga_table_name}.pid;
+    INNER JOIN ${this.manga_table_name} ON ${this.signature_table_name}.id_manga = ${this.manga_table_name}.pid
+    ORDER BY ${this.manga_table_name}.Name;
     `, [])
       .then((res) => {
         this.signature_row_data = [];
@@ -92,7 +93,7 @@ export class Tab3Page {
   // Retrieve rows from table
   getAllMangas() {
     this.databaseObj.executeSql(`
-    SELECT * FROM ${this.manga_table_name}
+    SELECT * FROM ${this.manga_table_name} ORDER BY Name
     `, [])
       .then((res) => {
         this.mangas_row_data = [];
@@ -106,6 +107,19 @@ export class Tab3Page {
         alert("error " + JSON.stringify(error));
         console.error(error);
       });
+  }
+
+  save(){
+    console.error(this.selected_manga.toString());
+    console.error(this.description_model);
+    for(var i = 0; i<this.mangas_row_data.length; i++){
+      if(this.selected_manga === this.mangas_row_data[i].Name){
+        console.error("position " + i);
+        this.manga_id = this.mangas_row_data[i].pid;
+        console.error(this.manga_id.toString());
+        this.insertRow();
+      }
+    }
   }
 
   // Insert row in the table
@@ -149,6 +163,7 @@ export class Tab3Page {
     this.updateActive = true;
     this.to_update_item = item;
     this.description_model = item.Description;
+    this.selected_manga = item.Name;
   }
 
   // Update row with saved row id

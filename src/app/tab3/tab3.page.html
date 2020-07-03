@@ -7,33 +7,63 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" text-align="center">
-  <ion-item-group>
-    <ion-item-divider>
-      <ion-list>
-        <ion-item>
-          <ion-label>Manga</ion-label>
-          <ion-select [(ngModel)]="selected_manga">
-            <ion-select-option *ngFor="let manga of mangas_row_data">{{manga.Name}}</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-list>
-    </ion-item-divider>
 
-    <ion-item-divider>
+  <ion-list>
+    <ion-list-header>
+      <ion-label>
+        Signature details
+      </ion-label>
+    </ion-list-header>
+
+    <ion-item>
+      <ion-label>Manga</ion-label>
+      <ion-select placeholder="Select One" [(ngModel)]="selected_manga">
+        <ion-select-option *ngFor="let manga of mangas_row_data">{{manga.Name}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
       <ion-textarea placeholder="Enter Description" [(ngModel)]="description_model" auto-grow="true"></ion-textarea>
-  
+
       <ng-container *ngIf="updateActive; else elseTemplateUpdate">
         <ion-button expand="block" (click)="updateRow()">
           <ion-icon name="refresh-circle"></ion-icon>
         </ion-button>
       </ng-container>
-  
+
       <ng-template #elseTemplateUpdate>
-        <ion-button expand="block" (click)="insertRow()">
+        <ion-button expand="block" (click)="save()">
           <ion-icon name="add-circle"></ion-icon>
         </ion-button>
       </ng-template>
-    </ion-item-divider>
-  </ion-item-group>
+    </ion-item>
+  </ion-list>
+
+  <ion-card *ngFor="let signature of signature_row_data">
+    <ion-card-header>
+      <ion-card-title>{{signature.Name}}</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <ion-fab edge vertical="center" horizontal="end" slot="fixed">
+        <ion-fab-button>
+          <ion-icon name="reorder-two"></ion-icon>
+        </ion-fab-button>
+
+        <ion-fab-list side="start">
+          <ion-fab-button (click)="enableUpdate(signature)">
+            <ion-icon name="create"></ion-icon>
+          </ion-fab-button>
+
+          <ion-fab-button (click)="deleteRow(signature)">
+            <ion-icon name="trash"></ion-icon>
+          </ion-fab-button>
+        </ion-fab-list>
+      </ion-fab>
+
+      {{signature.Description}}
+    </ion-card-content>
+  </ion-card>
 
 </ion-content>
